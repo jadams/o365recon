@@ -2,7 +2,7 @@
 #
 # 2018, 2017 @nyxgeek, @Spoonman1091 - TrustedSec
 #
-# Requirements: 
+# Requirements:
 # -Install Microsoft On-line Services Sign-In Assistant for IT Professionals RTW
 #        https://www.microsoft.com/en-us/download/details.aspx?id=41950
 # Then run "Install-Module MsOnline"
@@ -23,7 +23,7 @@
 # -azure           Use Azure to get extra info
 
 
-param([switch] $U = $false, 
+param([switch] $U = $false,
       [switch] $users_detailed = $false,
       [switch] $users_ldap = $false,
       [switch] $G = $false,
@@ -78,11 +78,11 @@ $CURRENTJOB = "./${projectname}/${projectname}"
 #connect to MsolService
 try {
     #old way
-    Connect-MsolService -ErrorAction Stop
-    
+    Connect-MsolService -ErrorAction Stop -AzureEnvironment USGovernment
+
     if ($azure) {
         #new way - to be switched over soon
-        Connect-AzureAD
+        Connect-AzureAD -AzureEnvironmentName AzureUSGovernment
     }
 
 }catch{
@@ -158,7 +158,7 @@ if ($users_ldap -eq  $true){
 
 echo "Retrieving User Information in LDAP Format"
 Get-MsolUser -All | Select-Object -Property * | tee -FilePath ./${CURRENTJOB}.users_ldap_detailed.txt
- 
+
 echo "-------------------------------------------"
 
 }
@@ -206,13 +206,13 @@ echo "Retrieving Group Membership:"
 # old way but with enum4linux style group membership
 Get-MsolGroup -All | % {
     $CURRENTGROUP=$_.DisplayName
-    $memberlist=$(Get-MsolGroupMember -All -GroupObjectid $_.objectid); 
-    if ($memberlist -ne $null){ 
+    $memberlist=$(Get-MsolGroupMember -All -GroupObjectid $_.objectid);
+    if ($memberlist -ne $null){
         foreach ($item in $memberlist){
             echo "$($CURRENTGROUP):$($item.EmailAddress)" | tee -Append -FilePath .\${CURRENTJOB}.groupmembership.txt
-        } 
-    }else{ 
-        "$($CURRENTGROUP): no group members found" 
+        }
+    }else{
+        "$($CURRENTGROUP): no group members found"
         };
     echo "--------"
     }
